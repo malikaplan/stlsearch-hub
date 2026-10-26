@@ -1,0 +1,31 @@
+name: 7/24 Autonomous 3D Model Harvester
+
+on:
+  schedule:
+    # Runs every 6 hours automatically in GitHub Cloud for free
+    - cron: '0 */6 * * *'
+  workflow_dispatch: # Allows manual trigger from GitHub UI
+
+jobs:
+  harvest:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: 20
+
+      - name: Run Harvester
+        run: |
+          node harvester.js
+
+      - name: Commit and Push Updated Database
+        run: |
+          git config --global user.name "STLSearch-Bot"
+          git config --global user.email "bot@stlsearch.internal"
+          git add data/yeggi_index.db
+          git commit -m "Auto-update 3D models database [skip ci]" || exit 0
+          git push

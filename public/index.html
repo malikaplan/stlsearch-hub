@@ -1,0 +1,323 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>STLSearch — Universal 3D Printable Model Search Engine</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="style.css">
+</head>
+<body>
+
+    <!-- Top Sticky Navigation & Search Header -->
+    <header class="top-header">
+        <div class="header-inner">
+            <!-- Brand -->
+            <a href="#" class="brand" id="logoResetBtn" title="Reset search and filters">
+                <div class="brand-logo">
+                    <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2">
+                        <path d="M21 16V8a2 2 0 0 0-1-1.73l-7-4a2 2 0 0 0-2 0l-7 4A2 2 0 0 0 3 8v8a2 2 0 0 0 1 1.73l7 4a2 2 0 0 0 2 0l7-4A2 2 0 0 0 21 16z"/>
+                        <polyline points="3.27 6.96 12 12.01 20.73 6.96"/>
+                        <line x1="12" y1="22.08" x2="12" y2="12"/>
+                    </svg>
+                </div>
+                <div class="brand-text">
+                    <span class="brand-title">STL<strong>Search</strong></span>
+                    <span class="brand-sub">8 Marketplaces</span>
+                </div>
+            </a>
+
+            <!-- Main Search Box -->
+            <div class="header-search-area">
+                <div class="search-box">
+                    <svg class="search-icon" width="19" height="19" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2">
+                        <circle cx="11" cy="11" r="8"/><path d="m21 21-4.3-4.3"/>
+                    </svg>
+                    <input
+                        type="text"
+                        id="searchInput"
+                        placeholder="Search millions of 3D models (e.g. dragon, phone stand, case, gear, cosplay)..."
+                        autocomplete="off"
+                    >
+                    <button id="clearSearchBtn" class="clear-input-btn hidden" title="Clear search">&times;</button>
+                    <button id="searchBtn" class="search-submit-btn">Search All</button>
+
+                    <!-- Live Letter-by-Letter Autocomplete Dropdown -->
+                    <div id="liveSuggestDropdown" class="suggest-dropdown hidden">
+                        <div class="suggest-section">
+                            <div class="suggest-label">Matching Keywords &amp; Phrases</div>
+                            <div id="suggestWordsList" class="suggest-words-grid"></div>
+                        </div>
+                        <div class="suggest-section">
+                            <div class="suggest-label">Instant Model Matches</div>
+                            <div id="suggestModelsList" class="suggest-models-list"></div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Right Header Controls -->
+            <div class="header-actions">
+                <button id="openCompareModalBtn" class="btn-outline" title="Compare categories across all 8 marketplaces">
+                    <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                        <rect x="3" y="3" width="7" height="7" rx="1"/><rect x="14" y="3" width="7" height="7" rx="1"/>
+                        <rect x="14" y="14" width="7" height="7" rx="1"/><rect x="3" y="14" width="7" height="7" rx="1"/>
+                    </svg>
+                    <span>Marketplace Index</span>
+                </button>
+
+                <label class="stream-switch" title="Automatically fetch deeper pages from all marketplaces">
+                    <input type="checkbox" id="infiniteStreamToggle" checked>
+                    <span class="stream-dot"></span>
+                    <span class="stream-label">Auto-Stream</span>
+                </label>
+
+                <div class="index-counter" title="Total indexed 3D models in local database">
+                    <span class="counter-dot"></span>
+                    <strong id="totalDbCounter">0</strong>
+                    <span>indexed</span>
+                </div>
+            </div>
+        </div>
+
+        <!-- Quick Related Phrases Bar (appears when typing or searching) -->
+        <div id="liveWordsBar" class="related-phrases-bar hidden">
+            <div class="related-phrases-inner">
+                <span class="related-title">Related searches:</span>
+                <div id="liveWordsChips" class="related-chips"></div>
+            </div>
+        </div>
+    </header>
+
+    <!-- Main 2-Column Workspace Layout -->
+    <div class="workspace-container">
+
+        <!-- LEFT SIDEBAR: Filters + 3-Level Universal Category Tree -->
+        <aside class="sidebar">
+
+            <!-- Active Category Breadcrumb Banner (shown when a category is selected) -->
+            <div id="categoryBreadcrumbBar" class="active-category-box hidden">
+                <div class="active-cat-header">
+                    <span class="active-cat-label">Active Category</span>
+                    <button id="clearCategoryBtn" class="text-reset-btn">Reset</button>
+                </div>
+                <div id="breadcrumbPathText" class="active-cat-path">All Categories</div>
+                <div id="activeCategorySources" class="active-cat-sources"></div>
+            </div>
+
+            <!-- Filter Group 1: Price (All / Free / Paid) -->
+            <div class="sidebar-card">
+                <div class="sidebar-section-title">
+                    <span>Price Filter</span>
+                    <button id="clearAllFiltersBtn" class="text-reset-btn">Reset All</button>
+                </div>
+                <div class="segmented-control" id="priceFilterGroup">
+                    <button class="seg-btn active" data-price="all">
+                        All <span class="seg-count" id="countPriceAll">0</span>
+                    </button>
+                    <button class="seg-btn seg-free" data-price="free">
+                        Free <span class="seg-count" id="countPriceFree">0</span>
+                    </button>
+                    <button class="seg-btn seg-paid" data-price="paid">
+                        Paid <span class="seg-count" id="countPricePaid">0</span>
+                    </button>
+                </div>
+
+                <!-- Technology (FDM / SLA / CNC) -->
+                <div class="sidebar-subtitle">Manufacturing Technology</div>
+                <div class="filter-pills" id="techFilterGroup">
+                    <button class="filter-pill active" data-tech="all">All Tech</button>
+                    <button class="filter-pill" data-tech="FDM" title="Fused Deposition Modeling (Filament)">FDM</button>
+                    <button class="filter-pill" data-tech="SLA" title="Resin / SLA / MSLA / DLP">SLA / Resin</button>
+                    <button class="filter-pill" data-tech="CNC" title="CNC Router, Laser Cutter & Plasma">CNC &amp; Laser</button>
+                </div>
+
+                <!-- Print Attributes -->
+                <div class="sidebar-subtitle">Print Features</div>
+                <div class="filter-pills" id="featureFilterGroup">
+                    <button class="filter-pill active" data-feature="all">Any</button>
+                    <button class="filter-pill" data-feature="nosupport">No-Support</button>
+                    <button class="filter-pill" data-feature="articulated">Articulated</button>
+                    <button class="filter-pill" data-feature="multicolor">Multicolor / AMS</button>
+                    <button class="filter-pill" data-feature="vase">Vase Mode</button>
+                    <button class="filter-pill" data-feature="functional">Functional</button>
+                </div>
+
+                <!-- File Format -->
+                <div class="sidebar-subtitle">File Format</div>
+                <div class="filter-pills" id="formatFilterGroup">
+                    <button class="filter-pill active" data-format="all">All</button>
+                    <button class="filter-pill" data-format="STL">STL</button>
+                    <button class="filter-pill" data-format="3MF">3MF</button>
+                    <button class="filter-pill" data-format="STEP">STEP / CAD</button>
+                    <button class="filter-pill" data-format="OBJ">OBJ</button>
+                    <button class="filter-pill" data-format="DXF">DXF / SVG</button>
+                </div>
+            </div>
+
+            <!-- Filter Group 2: Universal 3-Level Category Hierarchy -->
+            <div class="sidebar-card category-sidebar-card">
+                <div class="sidebar-section-title">
+                    <span>Universal Categories (18)</span>
+                </div>
+                <div class="category-filter-input-wrap">
+                    <input type="text" id="categoryTreeSearchInput" placeholder="Filter categories..." autocomplete="off">
+                </div>
+
+                <!-- Root Categories Accordion List -->
+                <div id="rootCategoriesGrid" class="category-tree-list"></div>
+            </div>
+
+        </aside>
+
+        <!-- RIGHT MAIN CONTENT: Subcategories + Marketplace Tabs + Toolbar + Model Grid -->
+        <main class="main-content">
+
+            <!-- Drilldown Subcategories Panel (Level 2 & Level 3) - Appears cleanly when a Root Category is selected -->
+            <section id="subCategoriesContainer" class="drilldown-panel hidden">
+                <div class="drilldown-row">
+                    <div class="drilldown-header">
+                        <span class="drilldown-badge">Level 2</span>
+                        <h3 id="level2Title">Subcategories</h3>
+                    </div>
+                    <div id="level2Grid" class="drilldown-chips"></div>
+                </div>
+
+                <div id="level3Section" class="drilldown-row drilldown-level3 hidden">
+                    <div class="drilldown-header">
+                        <span class="drilldown-badge badge-accent">Level 3</span>
+                        <h3 id="level3Title">Specific Niches</h3>
+                    </div>
+                    <div id="level3Grid" class="drilldown-chips"></div>
+                </div>
+            </section>
+
+            <!-- Marketplace Filter Bar (All 11 Marketplaces with Live Counters) -->
+            <section class="marketplace-tabs-bar" id="sourceFilterBar">
+                <button class="mp-tab active" data-source="all">
+                    <span class="mp-dot mp-all"></span>
+                    <span>All Marketplaces</span>
+                    <span class="mp-count" id="count-all">0</span>
+                </button>
+                <button class="mp-tab" data-source="Designmak">
+                    <span class="mp-dot" style="background: #e11d48;"></span>
+                    <span>Designmak</span>
+                    <span class="mp-count" id="count-Designmak">0</span>
+                </button>
+                <button class="mp-tab" data-source="MakerWorld">
+                    <span class="mp-dot mp-makerworld"></span>
+                    <span>MakerWorld</span>
+                    <span class="mp-count" id="count-MakerWorld">0</span>
+                </button>
+                <button class="mp-tab" data-source="Printables">
+                    <span class="mp-dot mp-printables"></span>
+                    <span>Printables</span>
+                    <span class="mp-count" id="count-Printables">0</span>
+                </button>
+                <button class="mp-tab" data-source="Thingiverse">
+                    <span class="mp-dot mp-thingiverse"></span>
+                    <span>Thingiverse</span>
+                    <span class="mp-count" id="count-Thingiverse">0</span>
+                </button>
+                <button class="mp-tab" data-source="CrealityCloud">
+                    <span class="mp-dot mp-creality"></span>
+                    <span>CrealityCloud</span>
+                    <span class="mp-count" id="count-CrealityCloud">0</span>
+                </button>
+                <button class="mp-tab" data-source="Snapmaker">
+                    <span class="mp-dot" style="background: #ea580c;"></span>
+                    <span>Snapmaker</span>
+                    <span class="mp-count" id="count-Snapmaker">0</span>
+                </button>
+                <button class="mp-tab" data-source="Cults3D">
+                    <span class="mp-dot mp-cults"></span>
+                    <span>Cults3D</span>
+                    <span class="mp-count" id="count-Cults3D">0</span>
+                </button>
+                <button class="mp-tab" data-source="MyMiniFactory">
+                    <span class="mp-dot mp-mmf"></span>
+                    <span>MyMiniFactory</span>
+                    <span class="mp-count" id="count-MyMiniFactory">0</span>
+                </button>
+                <button class="mp-tab" data-source="Thangs">
+                    <span class="mp-dot mp-thangs"></span>
+                    <span>Thangs</span>
+                    <span class="mp-count" id="count-Thangs">0</span>
+                </button>
+                <button class="mp-tab" data-source="GrabCAD">
+                    <span class="mp-dot mp-grabcad"></span>
+                    <span>GrabCAD</span>
+                    <span class="mp-count" id="count-GrabCAD">0</span>
+                </button>
+                <button class="mp-tab" data-source="CGTrader">
+                    <span class="mp-dot mp-cgtrader"></span>
+                    <span>CGTrader</span>
+                    <span class="mp-count" id="count-CGTrader">0</span>
+                </button>
+            </section>
+
+            <!-- Results Toolbar: Status, Sub-Filter Input, Sort & Fetch More -->
+            <section class="results-toolbar">
+                <div class="toolbar-status">
+                    <span id="streamSpinner" class="live-spinner hidden"></span>
+                    <span id="statusText" class="status-message">Ready — showing popular 3D printable models</span>
+                </div>
+
+                <div class="toolbar-controls">
+                    <div class="subsearch-box">
+                        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                            <polygon points="22 3 2 3 10 12.46 10 19 14 21 14 12.46 22 3"/>
+                        </svg>
+                        <input type="text" id="subSearchInput" placeholder="Filter within results (e.g. mini, v2)...">
+                    </div>
+
+                    <select id="sortSelect" class="sort-select" aria-label="Sort results">
+                        <option value="relevance">Sort: Best Match</option>
+                        <option value="popular">Sort: Most Popular</option>
+                        <option value="free_first">Sort: Free Models First</option>
+                        <option value="paid_first">Sort: Paid Models First</option>
+                        <option value="title_asc">Sort: Name (A–Z)</option>
+                    </select>
+
+                    <button id="loadMorePagesBtn" class="btn-secondary hidden">
+                        + Fetch Deeper Pages (<span id="currentPageBadge">Page 1</span>)
+                    </button>
+                </div>
+            </section>
+
+            <!-- Dynamic Keyword Tag Cloud (auto-extracted from current results) -->
+            <div id="dynamicSubTagsBar" class="smart-tags-bar hidden"></div>
+
+            <!-- 3D Model Cards Grid -->
+            <section id="resultsGrid" class="models-grid"></section>
+
+            <!-- Load More / Deep Crawl Footer -->
+            <div id="loadMoreFooter" class="load-more-container hidden">
+                <button id="loadMoreBottomBtn" class="btn-primary-large">
+                    Crawl Next Page Across All 8 Marketplaces
+                </button>
+            </div>
+
+        </main>
+    </div>
+
+    <!-- Modal: Marketplace Category Comparison Directory -->
+    <div id="compareModalBackdrop" class="modal-backdrop hidden">
+        <div class="modal-dialog">
+            <div class="modal-header">
+                <div>
+                    <h2>Individual Marketplace Category Directory</h2>
+                    <p>Compare the native category structures of all 8 marketplaces. Click any category to search immediately.</p>
+                </div>
+                <button id="closeCompareModalBtn" class="modal-close-btn">&times;</button>
+            </div>
+            <div id="marketplaceCompareGrid" class="modal-body-grid"></div>
+        </div>
+    </div>
+
+    <script src="categories_data.js"></script>
+    <script src="app.js"></script>
+</body>
+</html>

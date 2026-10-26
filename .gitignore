@@ -1,0 +1,9 @@
+# Chrome test profilleri ve önbellekleri (1.5 GB yer kaplıyor, GitHub'a gitmemeli)
+data/chrome_*
+data/img_cache/*
+data/*.pid
+data/*.json
+
+# Node modülleri ve loglar
+node_modules/
+*.log
