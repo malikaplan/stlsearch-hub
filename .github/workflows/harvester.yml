@@ -18,14 +18,19 @@ jobs:
         with:
           node-version: 20
 
-      - name: Run Harvester
+      - name: Run Harvester & Sync Cloudflare D1
+        env:
+          CLOUDFLARE_ACCOUNT_ID: ${{ secrets.CLOUDFLARE_ACCOUNT_ID }}
+          CLOUDFLARE_AUTH_EMAIL: ${{ secrets.CLOUDFLARE_AUTH_EMAIL }}
+          CLOUDFLARE_AUTH_KEY: ${{ secrets.CLOUDFLARE_AUTH_KEY }}
+          CLOUDFLARE_D1_ID: ${{ secrets.CLOUDFLARE_D1_ID }}
         run: |
           node harvester.js
 
-      - name: Commit and Push Updated Database
+      - name: Commit and Push Updated Local DB
         run: |
           git config --global user.name "STLSearch-Bot"
           git config --global user.email "bot@stlsearch.internal"
-          git add data/yeggi_index.db
+          git add data/yeggi_index.db || true
           git commit -m "Auto-update 3D models database [skip ci]" || exit 0
-          git push
+          git push || true
